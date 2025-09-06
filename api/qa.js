@@ -1,34 +1,39 @@
-import fetch from 'node-fetch';
+import { HfInference } from "@huggingface/inference";
 
-export default async function (req, res) {
-  const HUGGINGFACE_API_KEY = process.env.HUGGINGFACE_API_KEY;
-  const QA_ENDPOINT = "https://api-inference.huggingface.co/models/deepset/roberta-base-squad2";
-
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed' });
-  }
-
-  try {
-    const payload = req.body;
-    const response = await fetch(QA_ENDPOINT, {
-      headers: {
-        "Authorization": `Bearer ${HUGGINGFACE_API_KEY}`,
-        "Content-Type": "application/json"
-      },
-      method: "POST",
-      body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`API call failed: ${response.status} ${errorText}`);
+export default async (req, res) => {
+    // 1. Check for valid method (POST)
+    if (req.method !== 'POST') {
+        return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
-    const result = await response.json();
-    return res.status(200).json(result);
+    // 2. Check for required input
+    const { question, context } = req.body;
+    if (!question || !context) {
+        return res.status(400).json({ error: 'Missing required fields: question or context.' });
+    }
 
-  } catch (error) {
-    console.error("API Error:", error);
-    return res.status(500).json({ error: error.message });
-  }
-}
+    // 3. Initialize Hugging Face Inference
+    const HUGGINGFACE_API_KEY = process.env.HUGGINGFACE_API_KEY;
+    if (!HUGGINGFACE_API_KEY) {
+        return res.status(500).json({ error: 'API key not configured.' });
+    }
+    const hf = new HfInference(HUGGINGFACE_API_KEY);
+
+    try {
+        // 4. Run the question-answering model
+        const result = await hf.questionAnswering({
+            model: "distilbert-base-cased-distilled-squad",
+            inputs: {
+                question: question,
+                context: context,
+            },
+        });
+
+        // 5. Send back the answer
+        res.status(200).json({ answer: result.answer });
+
+    } catch (error) {
+        console.error("Hugging Face API Error:", error.message);
+        return res.status(500).json({ error: 'Failed to get an answer. Please check your API key and input.', details: error.message });
+    }
+};
