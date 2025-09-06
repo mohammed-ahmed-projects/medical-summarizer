@@ -18,7 +18,7 @@ export default async (req, res) => {
 
     try {
         const result = await hf.summarization({
-            model: model || "sshleifer/distilbart-cnn-12-6",
+            model: "facebook/bart-large-cnn",
             inputs: text
         });
 
