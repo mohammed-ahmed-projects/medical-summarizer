@@ -234,11 +234,11 @@
                 }
 
                 const data = await response.json();
-                statusDiv.textContent = 'Generating foundational summary...';
+                statusDiv.textContent = 'Generating summary...';
                 
                 summaryResultsDiv.innerHTML += `
                     <div class="summary-card">
-                        <h3>Foundational Summary:</h3>
+                        <h3>Summary:</h3>
                         <p>${data.summary_text}</p>
                     </div>
                 `;
