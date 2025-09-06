@@ -2,485 +2,286 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="referrer" content="no-referrer">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Agent for Medical Data Summaries</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'medical-blue': '#4A90E2',
-                        'medical-light': '#E8F4FD',
-                        'medical-gray': '#6B7280',
-                        'medical-dark': '#374151'
-                    }
-                }
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f7fafc;
+            color: #2d3748;
+            line-height: 1.6;
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background-color: #ffffff;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            text-align: center;
+            color: #1a202c;
+        }
+
+        .disclaimer {
+            font-size: 0.875rem;
+            color: #718096;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #1a202c;
+        }
+
+        textarea {
+            width: 100%;
+            height: 200px;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.375rem;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            box-sizing: border-box;
+            font-size: 1rem;
+            resize: vertical;
+        }
+
+        .model-selection {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 1rem;
+        }
+
+        .model-selection label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .model-selection select {
+            border: 1px solid #e2e8f0;
+            border-radius: 0.375rem;
+            padding: 0.5rem;
+            font-size: 1rem;
+        }
+
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #ffffff;
+            background-color: #4c51bf;
+            border: none;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #5a64d8;
+        }
+
+        #processing-status {
+            font-size: 0.875rem;
+            color: #4a5568;
+            margin-top: 1rem;
+        }
+
+        #results {
+            margin-top: 2rem;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 2rem;
+        }
+
+        .summary-card {
+            background-color: #f7fafc;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .summary-card h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+            color: #2d3748;
+        }
+
+        .summary-card p {
+            font-size: 0.875rem;
+            margin: 0;
+            color: #4a5568;
+        }
+
+        #qa-section {
+            margin-top: 2rem;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 2rem;
+        }
+
+        #qa-section input[type="text"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.375rem;
+            margin-bottom: 1rem;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+
+        #qa-section button {
+            width: auto;
+            display: inline-block;
+        }
+
+        #qa-result {
+            margin-top: 1rem;
+            font-size: 0.875rem;
+            color: #4a5568;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 1rem;
+            }
+            .container {
+                padding: 1rem;
             }
         }
-    </script>
+    </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
-    <div class="container mx-auto px-4 py-8 max-w-6xl">
-        <div class="text-center mb-8">
-            <h1 class="text-3xl font-bold text-medical-dark mb-2">AI Agent for Medical Data Summaries</h1>
-            <p class="text-medical-gray text-lg">Transform complex medical texts into accessible summaries for different expertise levels</p>
-        </div>
+<body>
+    <div class="container">
+        <h1>AI Agent for Medical Data Summaries</h1>
+        <p class="disclaimer">
+            This AI agent provides summaries based on the text provided by the user. The agent does not provide medical advice.
+            The user is solely responsible for the accuracy of the information.
+        </p>
 
-        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
-            <div class="flex">
-                <div class="ml-3">
-                    <p class="text-sm text-yellow-700">
-                        <strong>Medical Disclaimer:</strong> This agent only summarizes the information provided by the user. The user is solely responsible for the accuracy of the information.
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h2 class="text-xl font-semibold text-medical-dark mb-4">Input Text</h2>
-            
-            <div class="mb-6">
-                <label class="block text-sm font-medium text-medical-gray mb-2">Upload Document</label>
-                <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-medical-blue transition-colors">
-                    <input type="file" id="fileInput" accept=".pdf,.txt,.docx" class="hidden" onchange="handleFileUpload(event)">
-                    <label for="fileInput" class="cursor-pointer">
-                        <div class="text-medical-gray">
-                            <svg class="mx-auto h-12 w-12 mb-2" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                            <p class="text-sm">Click to upload or drag and drop</p>
-                            <p class="text-xs text-gray-500">PDF, TXT, DOCX files supported</p>
-                        </div>
-                    </label>
-                </div>
-                <div id="fileName" class="mt-2 text-sm text-medical-gray hidden"></div>
-            </div>
-
-            <div class="mb-6">
-                <label for="textInput" class="block text-sm font-medium text-medical-gray mb-2">Or paste text directly</label>
-                <textarea 
-                    id="textInput" 
-                    rows="8" 
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-medical-blue focus:border-transparent"
-                    placeholder="Paste your text here..."
-                ></textarea>
-            </div>
-
-            <div class="text-center">
-                <button 
-                    id="summarizeBtn" 
-                    onclick="startSummarization()" 
-                    class="bg-medical-blue hover:bg-blue-600 text-white font-medium py-3 px-8 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    Generate Summaries
-                </button>
-            </div>
-
-            <div id="progressContainer" class="hidden mt-6">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-sm text-medical-gray">Processing...</span>
-                    <span id="progressText" class="text-sm text-medical-gray">0%</span>
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-2">
-                    <div id="progressBar" class="bg-medical-blue h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
-                </div>
-                <div id="progressStatus" class="text-sm text-medical-gray mt-2">Initializing...</div>
-            </div>
-        </div>
-
-        <div id="resultsSection" class="hidden">
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-xl font-semibold text-medical-dark">Summary Results</h2>
-                    <div class="flex space-x-3">
-                        <button 
-                            onclick="exportResults()" 
-                            class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
-                        >
-                            Export Results
-                        </button>
-                        <button 
-                            id="qaBtn"
-                            onclick="generateQA()" 
-                            class="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
-                        >
-                            Generate Q&A
-                        </button>
-                    </div>
-                </div>
-
-                <div class="border-b border-gray-200 mb-6">
-                    <nav class="-mb-px flex space-x-8">
-                        <button onclick="showTab('foundational')" id="foundationalTab" class="tab-button active py-2 px-1 border-b-2 font-medium text-sm">
-                            Foundational Level
-                        </button>
-                        <button onclick="showTab('applied')" id="appliedTab" class="tab-button py-2 px-1 border-b-2 font-medium text-sm">
-                            Applied Level
-                        </button>
-                        <button onclick="showTab('advanced')" id="advancedTab" class="tab-button py-2 px-1 border-b-2 font-medium text-sm">
-                            Advanced Level
-                        </button>
-                    </nav>
-                </div>
-
-                <div id="foundationalContent" class="tab-content">
-                    <div class="bg-medical-light p-4 rounded-lg mb-4">
-                        <h3 class="font-semibold text-medical-dark mb-2">Foundational Level Summary</h3>
-                        <p class="text-sm text-medical-gray mb-2">Designed for general audiences with basic medical terminology explanations</p>
-                    </div>
-                    <div id="foundationalSummary" class="prose max-w-none text-medical-dark"></div>
-                </div>
-
-                <div id="appliedContent" class="tab-content hidden">
-                    <div class="bg-medical-light p-4 rounded-lg mb-4">
-                        <h3 class="font-semibold text-medical-dark mb-2">Applied Level Summary</h3>
-                        <p class="text-sm text-medical-gray mb-2">For healthcare students and professionals with intermediate knowledge</p>
-                    </div>
-                    <div id="appliedSummary" class="prose max-w-none text-medical-dark"></div>
-                </div>
-
-                <div id="advancedContent" class="tab-content hidden">
-                    <div class="bg-medical-light p-4 rounded-lg mb-4">
-                        <h3 class="font-semibold text-medical-dark mb-2">Advanced Level Summary</h3>
-                        <p class="text-sm text-medical-gray mb-2">For medical experts and researchers with comprehensive technical details</p>
-                    </div>
-                    <div id="advancedSummary" class="prose max-w-none text-medical-dark"></div>
-                </div>
-            </div>
-        </div>
-
-        <div id="qaSection" class="hidden mt-6">
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl font-semibold text-medical-dark">AI Q&A Session</h2>
-                    <button onclick="closeQA()" class="text-gray-500 hover:text-gray-700">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
-                </div>
-                
-                <div class="mb-4 p-4 bg-blue-50 rounded-lg">
-                    <p class="text-sm text-blue-800">
-                        <strong>Instructions:</strong> Ask questions about the text you provided. The AI will answer based only on the information contained in your original document.
-                    </p>
-                </div>
-
-                <div id="chatContainer" class="border border-gray-200 rounded-lg h-96 overflow-y-auto p-4 mb-4 bg-gray-50">
-                    <div id="chatMessages" class="space-y-4">
-                        </div>
-                </div>
-
-                <div class="flex space-x-3">
-                    <input 
-                        type="text" 
-                        id="questionInput" 
-                        placeholder="Ask a question about the text..."
-                        class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-medical-blue focus:border-transparent"
-                        onkeypress="handleQuestionKeyPress(event)"
-                    >
-                    <button 
-                        onclick="askQuestion()" 
-                        class="bg-medical-blue hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition-colors"
-                    >
-                        Ask
-                    </button>
-                </div>
-
-                <div id="suggestedQuestions" class="mt-4">
-                    <h4 class="font-medium text-medical-dark mb-2">Suggested Questions:</h4>
-                    <div class="flex flex-wrap gap-2">
-                        </div>
-                </div>
-            </div>
-        </div>
-  </div>
-  <script>
-        let currentText = '';
-        let summaries = {};
-        let qaHistory = [];
+        <h2>Input Text</h2>
+        <textarea id="inputText" placeholder="Enter or paste medical text here..."></textarea>
         
-        // No API Key here. It's now stored securely on Vercel.
-        const SUMMARIZATION_ENDPOINT = "/api/summarize";
-        const QA_ENDPOINT = "/api/qa";
+        <div class="model-selection">
+            <label for="summarizationModel">Choose Summarization Model:</label>
+            <select id="summarizationModel">
+                <option value="sshleifer/distilbart-cnn-12-6" selected>Foundational (General Audience)</option>
+                <option value="sshleifer/distilbart-cnn-6-6">Applied (Professionals & Students)</option>
+                <option value="t5-small">Advanced (Experts)</option>
+            </select>
+        </div>
         
-        // Main function to call our Vercel API endpoint
-        async function queryVercelAPI(endpoint, payload) {
+        <button id="summarizeBtn">Generate Summaries</button>
+        <div id="processing-status"></div>
+
+        <div id="results" style="display: none;">
+            <h2>Results</h2>
+            <div id="summaryResults"></div>
+        </div>
+
+        <div id="qa-section" style="display: none;">
+            <h2>Ask Gemini (Q&A)</h2>
+            <input type="text" id="qaInput" placeholder="Ask a question about the text...">
+            <button id="qaBtn">Get Answer</button>
+            <div id="qa-result"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('summarizeBtn').addEventListener('click', async () => {
+            const inputText = document.getElementById('inputText').value;
+            const model = document.getElementById('summarizationModel').value;
+            const statusDiv = document.getElementById('processing-status');
+            const resultsDiv = document.getElementById('results');
+            const summaryResultsDiv = document.getElementById('summaryResults');
+            const qaSectionDiv = document.getElementById('qa-section');
+
+            if (!inputText.trim()) {
+                alert('Please enter some text to summarize.');
+                return;
+            }
+
+            statusDiv.textContent = 'Processing...';
+            resultsDiv.style.display = 'none';
+            qaSectionDiv.style.display = 'none';
+            summaryResultsDiv.innerHTML = '';
+
             try {
-                const response = await fetch(endpoint, {
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    method: "POST",
-                    body: JSON.stringify(payload),
+                const response = await fetch('/api/summarize', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: inputText, model: model })
                 });
 
                 if (!response.ok) {
-                    const errorDetails = await response.json();
-                    throw new Error(`API call failed: ${response.status} ${errorDetails.error}`);
+                    const error = await response.json();
+                    throw new Error(error.error || 'API call failed');
                 }
 
-                const result = await response.json();
-                return result;
-            } catch (error) {
-                console.error("API Error:", error);
-                document.getElementById('progressStatus').textContent = `Error: ${error.message}`;
-                alert(`Error: ${error.message}. Please check your input and network connection.`);
-                return null;
-            }
-        }
-
-        function handleFileUpload(event) {
-            const file = event.target.files[0];
-            if (file) {
-                document.getElementById('fileName').textContent = `Selected: ${file.name}`;
-                document.getElementById('fileName').classList.remove('hidden');
+                const data = await response.json();
+                statusDiv.textContent = 'Generating foundational summary...';
                 
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    currentText = e.target.result;
-                    document.getElementById('textInput').value = currentText.substring(0, 1000) + '...';
-                };
-                reader.readAsText(file);
-            }
-        }
+                summaryResultsDiv.innerHTML += `
+                    <div class="summary-card">
+                        <h3>Foundational Summary:</h3>
+                        <p>${data.summary}</p>
+                    </div>
+                `;
+                
+                resultsDiv.style.display = 'block';
+                qaSectionDiv.style.display = 'block';
+                statusDiv.textContent = 'Summaries generated successfully.';
 
-        async function startSummarization() {
-            const textInput = document.getElementById('textInput').value.trim();
-            const fileInput = document.getElementById('fileInput').files[0];
-            
-            if (!textInput && !fileInput) {
-                alert('Please provide text input or upload a file.');
+            } catch (error) {
+                statusDiv.textContent = 'Error: ' + error.message;
+                alert('Error: ' + error.message);
+            }
+        });
+
+        document.getElementById('qaBtn').addEventListener('click', async () => {
+            const context = document.getElementById('inputText').value;
+            const question = document.getElementById('qaInput').value;
+            const qaResultDiv = document.getElementById('qa-result');
+
+            if (!context.trim() || !question.trim()) {
+                alert('Please provide both text and a question.');
                 return;
             }
 
-            currentText = textInput || currentText;
-            
-            if (!currentText) {
-                alert('No text content found to summarize.');
-                return;
-            }
+            qaResultDiv.textContent = 'Getting answer...';
 
-            document.getElementById('progressContainer').classList.remove('hidden');
-            document.getElementById('summarizeBtn').disabled = true;
-            document.getElementById('resultsSection').classList.add('hidden');
-            document.getElementById('qaSection').classList.add('hidden');
+            try {
+                const response = await fetch('/api/qa', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question: question, context: context })
+                });
 
-            await generateSummaries();
-            showResults();
-        }
-
-        async function generateSummaries() {
-            const payload = { inputs: currentText };
-            
-            document.getElementById('progressStatus').textContent = 'Generating foundational summary...';
-            let result = await queryVercelAPI(SUMMARIZATION_ENDPOINT, payload);
-            summaries.foundational = result && result.length > 0 ? result[0].summary_text : 'Could not generate summary.';
-            document.getElementById('progressBar').style.width = '33%';
-
-            document.getElementById('progressStatus').textContent = 'Generating applied summary...';
-            result = await queryVercelAPI(SUMMARIZATION_ENDPOINT, payload);
-            summaries.applied = result && result.length > 0 ? result[0].summary_text : 'Could not generate summary.';
-            document.getElementById('progressBar').style.width = '66%';
-            
-            document.getElementById('progressStatus').textContent = 'Generating advanced summary...';
-            summaries.advanced = currentText;
-            document.getElementById('progressBar').style.width = '100%';
-            document.getElementById('progressStatus').textContent = 'Complete!';
-
-            summaries.foundational = `<div class="prose max-w-none text-medical-dark">${summaries.foundational}</div>`;
-            summaries.applied = `<div class="prose max-w-none text-medical-dark">${summaries.applied}</div>`;
-            summaries.advanced = `<div class="prose max-w-none text-medical-dark">${summaries.advanced}</div>`;
-        }
-
-        function showResults() {
-            document.getElementById('progressContainer').classList.add('hidden');
-            document.getElementById('summarizeBtn').disabled = false;
-            document.getElementById('resultsSection').classList.remove('hidden');
-            
-            document.getElementById('foundationalSummary').innerHTML = summaries.foundational;
-            document.getElementById('appliedSummary').innerHTML = summaries.applied;
-            document.getElementById('advancedSummary').innerHTML = summaries.advanced;
-            
-            document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
-        }
-
-        function showTab(tabName) {
-            const tabContents = document.querySelectorAll('.tab-content');
-            tabContents.forEach(content => content.classList.add('hidden'));
-            
-            const tabButtons = document.querySelectorAll('.tab-button');
-            tabButtons.forEach(button => {
-                button.classList.remove('active', 'border-medical-blue', 'text-medical-blue');
-                button.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
-            });
-            
-            document.getElementById(tabName + 'Content').classList.remove('hidden');
-            
-            const activeTab = document.getElementById(tabName + 'Tab');
-            activeTab.classList.add('active', 'border-medical-blue', 'text-medical-blue');
-            activeTab.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
-        }
-
-        async function generateQA() {
-            document.getElementById('qaSection').classList.remove('hidden');
-            document.getElementById('qaSection').scrollIntoView({ behavior: 'smooth' });
-            
-            document.getElementById('chatMessages').innerHTML = '';
-            qaHistory = [];
-            
-            await generateSuggestedQuestions();
-            
-            addMessage('AI Assistant', 'Hello! I\'m ready to answer questions about the text you provided. I will only use the information in your document to answer.', 'ai');
-        }
-        
-        async function generateSuggestedQuestions() {
-            const keywords = currentText.toLowerCase().split(/\s+/).filter(word => word.length > 5).slice(0, 5);
-            const questions = [
-                `What are the main points in the text?`,
-                `What does the text say about ${keywords[0] || 'the topic'}?`,
-                `Are there any recommendations mentioned in the text?`,
-                `What is the summary of the section related to ${keywords[1] || 'details'}?`,
-                `Who is the author referred to?`
-            ];
-            
-            const container = document.getElementById('suggestedQuestions');
-            const questionsDiv = container.querySelector('div');
-            questionsDiv.innerHTML = '';
-            
-            questions.forEach(question => {
-                const button = document.createElement('button');
-                button.className = 'bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm transition-colors';
-                button.textContent = question;
-                button.onclick = () => {
-                    document.getElementById('questionInput').value = question;
-                    askQuestion();
-                };
-                questionsDiv.appendChild(button);
-            });
-        }
-
-        async function askQuestion() {
-            const questionInput = document.getElementById('questionInput');
-            const question = questionInput.value.trim();
-            
-            if (!question) {
-                alert('Please enter a question.');
-                return;
-            }
-            
-            addMessage('You', question, 'user');
-            
-            questionInput.value = '';
-            questionInput.disabled = true;
-            
-            const qaPayload = {
-                inputs: {
-                    question: question,
-                    context: currentText
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'API call failed');
                 }
-            };
-            
-            addMessage('AI Assistant', 'Thinking...', 'ai');
-            
-            const qaResult = await queryVercelAPI(QA_ENDPOINT, qaPayload);
 
-            const thinkingMessage = document.getElementById('chatMessages').lastChild;
-            if (thinkingMessage && thinkingMessage.textContent.includes('Thinking')) {
-                thinkingMessage.remove();
-            }
-
-            const answer = qaResult && qaResult.answer ? qaResult.answer : 'Sorry, I couldn\'t find an answer to that question in the provided text.';
-            
-            addMessage('AI Assistant', answer, 'ai');
-            
-            questionInput.disabled = false;
-            questionInput.focus();
-        }
-
-        function addMessage(sender, message, type) {
-            const chatMessages = document.getElementById('chatMessages');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `flex ${type === 'user' ? 'justify-end' : 'justify-start'}`;
-            
-            messageDiv.innerHTML = `
-                <div class="max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                    type === 'user' 
-                        ? 'bg-medical-blue text-white' 
-                        : 'bg-white border border-gray-200'
-                }">
-                    <div class="font-medium text-sm mb-1">${sender}</div>
-                    <div class="text-sm">${message}</div>
-                </div>
-            `;
-            
-            chatMessages.appendChild(messageDiv);
-            
-            const chatContainer = document.getElementById('chatContainer');
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-        }
-
-        function handleQuestionKeyPress(event) {
-            if (event.key === 'Enter') {
-                askQuestion();
-            }
-        }
-
-        function closeQA() {
-            document.getElementById('qaSection').classList.add('hidden');
-        }
-
-        function exportResults() {
-            if (!summaries.foundational) {
-                alert('No summaries to export. Please generate summaries first.');
-                return;
-            }
-
-            const cleanSummary = (html) => {
-                const doc = new DOMParser().parseFromString(html, 'text/html');
-                return doc.body.textContent || "";
-            };
-
-            const exportContent = `
-Medical Text Summary Report
-Generated on: ${new Date().toLocaleDateString()}
-
-FOUNDATIONAL LEVEL SUMMARY:
-${cleanSummary(summaries.foundational)}
-
-APPLIED LEVEL SUMMARY:
-${cleanSummary(summaries.applied)}
-
-ADVANCED LEVEL SUMMARY:
-${cleanSummary(summaries.advanced)}
-
-DISCLAIMER: This agent only summarizes the information provided by the user. The user is solely responsible for the accuracy of the information.
-            `;
-
-            const blob = new Blob([exportContent], { type: 'text/plain' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'medical_summary_report.txt';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const tabButtons = document.querySelectorAll('.tab-button');
-            tabButtons.forEach(button => {
-                if (!button.classList.contains('active')) {
-                    button.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
-                }
-            });
-            
-            const activeTab = document.querySelector('.tab-button.active');
-            if (activeTab) {
-                activeTab.classList.add('border-medical-blue', 'text-medical-blue');
+                const data = await response.json();
+                qaResultDiv.textContent = `Answer: ${data.answer}`;
+            } catch (error) {
+                qaResultDiv.textContent = 'Error: ' + error.message;
+                alert('Error: ' + error.message);
             }
         });
     </script>
