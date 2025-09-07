@@ -1,3 +1,6 @@
+## ⚠️  Important Note
+This project represents an early attempt in my machine learning journey. The current code is incomplete and contains unresolved challenges. I have preserved this repository as a documentation of my learning process, the challenges I faced, and a foundational step leading to my more successful projects.
+
 # AI-Powered Medical Summarizer
 
 ## Project Description
